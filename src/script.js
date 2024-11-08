@@ -1,29 +1,43 @@
-const gallery = document.getElementById('gallery');
-const loadMoreBtn = document.getElementById('loadMoreBtn');
-const clearBtn = document.getElementById('clearBtn');
-const removeLastBtn = document.getElementById('removeLastBtn');
-const reverseBtn = document.getElementById('reverseBtn');
+document.addEventListener('DOMContentLoaded', () => {
+    const gallery = document.getElementById('gallery');
+    let page = 1;
+    const limit = 4;
 
-const loadImages = async (count = 4) => {
-    for (let i = 0; i < count; i++) {
-        const img = document.createElement('img');
-        img.src = `https://picsum.photos/200/300?random=${Math.random()}`;
-        img.alt = 'Random image';
-        gallery.appendChild(img);
+    async function loadImages() {
+        try {
+            const response = await fetch(`https://picsum.photos/v2/list?page=${page}&limit=${limit}`);
+            const images = await response.json();
+            images.forEach(image => {
+                const imgElement = document.createElement('img');
+                imgElement.src = image.download_url;
+                imgElement.alt = image.author;
+                gallery.appendChild(imgElement);
+            });
+            page++;
+        } catch (error) {
+            console.error('Error loading images:', error);
+        }
     }
-};
 
-loadImages();
-
-loadMoreBtn.addEventListener('click', () => loadImages());
-clearBtn.addEventListener('click', () => gallery.innerHTML = '');
-removeLastBtn.addEventListener('click', () => {
-    if (gallery.lastElementChild) {
-        gallery.removeChild(gallery.lastElementChild);
+    function clearGallery() {
+        gallery.innerHTML = '';
     }
-});
-reverseBtn.addEventListener('click', () => {
-    const images = Array.from(gallery.children);
-    gallery.innerHTML = '';
-    images.reverse().forEach(img => gallery.appendChild(img));
+
+    function removeLastImage() {
+        const lastImage = gallery.lastElementChild;
+        if (lastImage) gallery.removeChild(lastImage);
+    }
+
+    function reverseGallery() {
+        const images = Array.from(gallery.children);
+        gallery.innerHTML = '';
+        images.reverse().forEach(img => gallery.appendChild(img));
+    }
+
+    document.getElementById('loadMoreBtn').addEventListener('click', loadImages);
+    document.getElementById('clearBtn').addEventListener('click', clearGallery);
+    document.getElementById('removeLastBtn').addEventListener('click', removeLastImage);
+    document.getElementById('reverseBtn').addEventListener('click', reverseGallery);
+
+    loadImages();
 });
